@@ -310,6 +310,6 @@ int deal(int drawn[]){
 }
 
 void showpockets(int c1, int c2){
-//WIP
+//Currently under progress
 
 }

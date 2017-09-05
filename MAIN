@@ -1,0 +1,315 @@
+
+//library inclusions, don't worry about this for papyrus
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+
+//function prototypes
+void printintro(void); // printing the instructions and start options for the game
+void printerror(void); //function to print error report
+int checkante(int x); //checks if AI is eligible to ante
+int Pcheckante(int x); //checks if P is eligible and wants to ante
+int deal(int drawn[]); //draws a valid card based off of drawn array
+void showpockets(int c1, int c2); //prints names of pocket cards
+int card;
+
+
+int main(void) {
+	int input; //var for taking user decision input
+	int vektor[52]; //shuffled card array'
+	int drawn[52]; // tracks dealt cards
+	int z; //multi purpose int var
+
+	int AI1play=1;
+	int AI2play=1;
+	int Pplay=1;
+	int AI3play=1;
+
+	int AI1cash=500;
+	int AI2cash=500;
+	int Pcash=500;
+	int AI3cash=500;
+
+	int AI1pc1;
+	int AI1pc2;
+	int AI2pc1;
+	int AI2pc2;
+	int Ppc1;
+	int Ppc2;
+	int AI3pc1;
+	int AI3pc2;
+
+	int bool; //generic bool value to be used for checks
+
+	srand(time(NULL)); //seed random number generator
+
+	printintro(); //print introduction
+	//take user input
+	fflush(stdin);
+	scanf("%d",&input);
+
+	//if statement to decide if game should start or to exit game, includes error checking
+	if (input==2){ //selected to quit, so exit program
+		printf("\n\nProgram terminated.\n\n\n\n");
+		fflush(stdout);
+	}
+	else if (input==1){ //chose to play, so start game
+		//GAME RUNS WITHIN THIS BRANCH, EXITING THIS BLOCK EXITS PROGRAM
+
+		printf("\n\nGAME STARTED!\n\n");
+		fflush(stdout);
+
+		printf("Shuffling Cards...\n\n");
+		fflush(stdout);
+
+		//seed random number generator
+		srand(time(NULL));
+
+		for (int i = 0; i < 52; i++) {     // fill array
+			vektor[i] = (i+1);
+
+		}
+
+
+		for (int i = 0; i < 52; i++) {    // shuffle array
+			int temp = vektor[i];
+			int randomIndex = rand() % 52;
+
+			vektor[i]           = vektor[randomIndex];
+			vektor[randomIndex] = temp; //vektor is your shuffled card array
+		}
+		printf("Cards shuffled! Taking antes...\n\n");
+		fflush(stdout);
+
+		bool = checkante(AI1cash);
+		if (bool==1){
+			AI1cash=(AI1cash-1);
+			AI1play=1;
+			printf("\nCP1 has anted!\n");
+			fflush(stdout);
+		}
+		else {
+			AI1play=0;
+			printf("\nCP1 has busted out and will not play.\n");
+			fflush(stdout);
+		}
+		bool = checkante(AI2cash);
+		if (bool==1){
+			AI2cash=(AI2cash-1);
+			AI2play=1;
+			printf("\nCP2 has anted!\n");
+			fflush(stdout);
+		}
+		else {
+			AI2play=0;
+			printf("\nCP2 has busted out and will not play.");
+			fflush(stdout);
+		}
+		bool=Pcheckante(Pcash);
+		if (bool==1){
+			Pcash=(Pcash-1);
+			Pplay=1;
+			printf("\nYou have anted!\n");
+			fflush(stdout);
+		}
+		else {
+			Pplay=0;
+			goto Exit;
+		}
+		bool = checkante(AI3cash);
+		if (bool==1){
+			AI3cash=(AI3cash-1);
+			AI3play=1;
+			printf("\nCP3 has anted!\n");
+			fflush(stdout);
+		}
+		else {
+			AI3play=0;
+			printf("\nCP3 has busted out and will not play.");
+			fflush(stdout);
+		}
+		//Antes have been taken, deal cards
+		printf("\nAntes have been taken, dealing cards!\n");
+		fflush(stdout);
+
+		//init drawn array:
+		for (int i=0; i < 52; i++){
+			drawn[i] = 0;
+		}
+		//deal cards to each player and assign to drawn array
+
+		card=deal(drawn);
+		z=(card-1);
+		drawn[z]=card;
+
+		AI1pc1=card; //AI1 Pocket card 1
+
+		card=deal(drawn);
+		z=(card-1);
+		drawn[z]=card;
+
+		AI1pc2=card; //AI1 Pocket card 2
+
+		card=deal(drawn);
+		z=(card-1);
+		drawn[z]=card;
+
+		AI2pc1=card; //AI2 pocket card 1
+
+		card=deal(drawn);
+		z=(card-1);
+		drawn[z]=card;
+
+		AI2pc2=card; //AI2 pocket card 2
+
+		card=deal(drawn);
+		z=(card-1);
+		drawn[z]=card;
+
+		Ppc1=card; //P pocket card 1
+
+		card=deal(drawn);
+		z=(card-1);
+		drawn[z]=card;
+
+		Ppc2=card; //P pocket card 2
+
+		card=deal(drawn);
+		z=(card-1);
+		drawn[z]=card;
+
+		AI3pc1=card; //AI3 pocket card 1
+
+		card=deal(drawn);
+		z=(card-1);
+		drawn[z]=card;
+
+		AI3pc2=card; //AI3 pocket card 2
+
+		//cards are dealt, run AI1 and AI2 operations
+		//start player menu
+
+
+	}
+	else { //invalid input, terminate program
+		printerror(); //function prints error and terminates program
+	}
+	Exit:
+	return EXIT_SUCCESS;
+}
+//end of main
+
+//function definitions:
+
+void printintro(void) //defining function for printing game instructions
+{
+	printf("\nWelcome to Texas Hold 'Em Poker!\n");
+	fflush(stdout);
+	printf("Would you like to play?\n");
+	fflush(stdout);
+	printf("Type '1' for 'Yes'\n");
+	fflush(stdout);
+	printf("Type '2' for 'No'\n");
+	fflush(stdout);
+	printf("Your response: ");
+	fflush(stdout);
+
+}
+void printerror(void) //defining function for printing error report
+{
+	printf("\n\nError! Invalid input!\n Program terminated.\n\n\n");
+	fflush(stdout);
+}
+int checkante(int x){
+	int i;
+	if (x>=1){
+		i=1;
+	}
+	else {
+		i=0;
+	}
+	return i;
+
+}
+int Pcheckante(int x){
+	int i;
+	int in;
+	if (x>=1){
+		printf("\nWould you like to ante?\n1) Yes\n2) No\nYour response: ");
+		fflush(stdout);
+		fflush(stdin);
+		scanf("%d",&in);
+		if (in==1){
+			i=1;
+		}
+		else if (in==2){
+			printf("\nYou have chosen not to ante! Exiting game.");
+			fflush(stdout);
+			i=0;
+		}
+		else{
+			printf("\n INVALID INPUT! EXITING GAME!");
+			i=0;
+		}
+	}
+	else {
+		printf("\nYou have busted out! Exiting game.\n");
+		fflush(stdout);
+		i=0;
+	}
+	return i;
+}
+
+int deal(int drawn[]){
+	int i;
+	int x;
+	int z;
+	int card;
+	//first check to make sure not all cards have been drawn
+	z=0;
+	i=0;
+	for (int y=0;y<52;y++) {
+		if (drawn[z]==0){
+			//continue
+			z++;
+		}
+		else {
+			//add one to counter
+			i++;
+			z++;
+
+		}
+	}
+	if (i==52){
+		//all cards have been dealt, report error and exit
+		printf("\nALL CARDS HAVE BEEN DEALT, ERROR\n");
+		card=0;
+		goto Funexit;
+	}
+	//all cards have not been dealt, so try to deal a card
+	retry:
+	x=(rand()%52+1); //gets a card ID to deal
+	z=0;
+	for (int y=0;y<52;y++) {
+
+		if (drawn[z]==x) {
+			//ID is a repeat so try again
+			goto retry; //picks another card
+
+		}
+		else{
+			//not a repeat, continue
+			z++;
+		}
+
+	}
+	// loop has finished so card is valid
+	card=x;
+	Funexit:
+	return card;
+}
+
+void showpockets(int c1, int c2){
+//WIP
+
+}

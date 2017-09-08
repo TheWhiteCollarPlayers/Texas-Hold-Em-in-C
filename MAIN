@@ -1,4 +1,14 @@
 
+/*
+ ============================================================================
+ Name        : Poker.c
+ Author      : 
+ Version     :
+ Copyright   : Your copyright notice
+ Description : Hello World in C, Ansi-style
+ ============================================================================
+ */
+
 //library inclusions, don't worry about this for papyrus
 #include <stdio.h>
 #include <stdlib.h>
@@ -10,7 +20,8 @@ void printerror(void); //function to print error report
 int checkante(int x); //checks if AI is eligible to ante
 int Pcheckante(int x); //checks if P is eligible and wants to ante
 int deal(int drawn[]); //draws a valid card based off of drawn array
-void showpockets(int c1, int c2); //prints names of pocket cards
+int getsuit(int cin); //returns value of suit of input card, 1-4
+int pocketrank(int in1, int in2, int in1s, int in2s); //fun for determining rank of pocket cards
 int card;
 
 
@@ -19,6 +30,16 @@ int main(void) {
 	int vektor[52]; //shuffled card array'
 	int drawn[52]; // tracks dealt cards
 	int z; //multi purpose int var
+	int pot; //var for the table pot
+
+	int AI1bet;
+	int AI2bet;
+	int Pbet;
+	int AI3bet;
+
+	int AI1pr;
+	int AI2pr;
+	int AI3pr;
 
 	int AI1play=1;
 	int AI2play=1;
@@ -30,14 +51,25 @@ int main(void) {
 	int Pcash=500;
 	int AI3cash=500;
 
-	int AI1pc1;
+	int AI1pc1; //pocket cards and suits for each player
 	int AI1pc2;
+	int AI1pc1s;
+	int AI1pc2s;
+
 	int AI2pc1;
 	int AI2pc2;
+	int AI2pc1s;
+	int AI2pc2s;
+
 	int Ppc1;
 	int Ppc2;
+	int Ppc1s;
+	int Ppc2s;
+
 	int AI3pc1;
 	int AI3pc2;
+	int AI3pc1s;
+	int AI3pc2s;
 
 	int bool; //generic bool value to be used for checks
 
@@ -55,7 +87,7 @@ int main(void) {
 	}
 	else if (input==1){ //chose to play, so start game
 		//GAME RUNS WITHIN THIS BRANCH, EXITING THIS BLOCK EXITS PROGRAM
-
+		pot=0;
 		printf("\n\nGAME STARTED!\n\n");
 		fflush(stdout);
 
@@ -84,6 +116,7 @@ int main(void) {
 		bool = checkante(AI1cash);
 		if (bool==1){
 			AI1cash=(AI1cash-1);
+			pot=pot+1;
 			AI1play=1;
 			printf("\nCP1 has anted!\n");
 			fflush(stdout);
@@ -96,6 +129,7 @@ int main(void) {
 		bool = checkante(AI2cash);
 		if (bool==1){
 			AI2cash=(AI2cash-1);
+			pot=pot+1;
 			AI2play=1;
 			printf("\nCP2 has anted!\n");
 			fflush(stdout);
@@ -108,6 +142,7 @@ int main(void) {
 		bool=Pcheckante(Pcash);
 		if (bool==1){
 			Pcash=(Pcash-1);
+			pot=pot+1;
 			Pplay=1;
 			printf("\nYou have anted!\n");
 			fflush(stdout);
@@ -119,6 +154,7 @@ int main(void) {
 		bool = checkante(AI3cash);
 		if (bool==1){
 			AI3cash=(AI3cash-1);
+			pot=pot+1;
 			AI3play=1;
 			printf("\nCP3 has anted!\n");
 			fflush(stdout);
@@ -143,52 +179,77 @@ int main(void) {
 		drawn[z]=card;
 
 		AI1pc1=card; //AI1 Pocket card 1
+		AI1pc1s=getsuit(AI1pc1);
 
 		card=deal(drawn);
 		z=(card-1);
 		drawn[z]=card;
 
 		AI1pc2=card; //AI1 Pocket card 2
+		AI1pc2s=getsuit(AI1pc2);
 
 		card=deal(drawn);
 		z=(card-1);
 		drawn[z]=card;
 
 		AI2pc1=card; //AI2 pocket card 1
+		AI2pc1s=getsuit(AI2pc1);
 
 		card=deal(drawn);
 		z=(card-1);
 		drawn[z]=card;
 
 		AI2pc2=card; //AI2 pocket card 2
+		AI2pc2s=getsuit(AI2pc2);
 
 		card=deal(drawn);
 		z=(card-1);
 		drawn[z]=card;
 
 		Ppc1=card; //P pocket card 1
+		Ppc1s=getsuit(Ppc1);
 
 		card=deal(drawn);
 		z=(card-1);
 		drawn[z]=card;
 
 		Ppc2=card; //P pocket card 2
+		Ppc2s=getsuit(Ppc2);
 
 		card=deal(drawn);
 		z=(card-1);
 		drawn[z]=card;
 
 		AI3pc1=card; //AI3 pocket card 1
+		AI3pc1s=getsuit(AI3pc1);
 
 		card=deal(drawn);
 		z=(card-1);
 		drawn[z]=card;
 
 		AI3pc2=card; //AI3 pocket card 2
+		AI3pc2s=getsuit(AI3pc2);
 
-		//cards are dealt, run AI1 and AI2 operations
+		//cards are dealt, run AI1 and AI2 operations:
+
+		//get AI1 pocket card rank:
+		AI1pr=pocketrank(AI1pc1,AI1pc2,AI1pc1s,AI1pc2s);
+		//z is the rank, decide what to do
+		if (AI1pr < 7){
+			AI1bet=0;
+			printf("\nAI1 checks.\n");
+			fflush(stdout);
+		}
+		else if ((AI1pr >= 7) && (AI1pr <= 13) ){
+			AI1bet=5;
+			AI1cash=AI1cash-5;
+			pot=pot+5;
+			printf("\n") //WIP here
+		}
+
+
 		//start player menu
-
+		//run AI3 operations
 
 	}
 	else { //invalid input, terminate program
@@ -308,8 +369,104 @@ int deal(int drawn[]){
 	Funexit:
 	return card;
 }
+int getsuit(int cin){
+	int suit;
+	if (cin<14){
+		//is a heart
+		suit = 1;
+		goto funexit;
+	}
+	else if ((cin>=14) && (cin<27)){
+		//is a diamond
+		suit = 2;
+		goto funexit;
 
-void showpockets(int c1, int c2){
-//Currently under progress
+	}
+	else if ((cin>=27) && (cin<40)){
+		//is a club
+		suit = 3;
+		goto funexit;
 
+	}
+	else {
+		//is a spade
+		suit = 4;
+		goto funexit;
+
+	}
+	funexit:
+	return suit;
 }
+int pocketrank(int, in1, int in2, int in1s, int in2s){
+	int pc1;
+	int pc1s;
+	int pc2;
+	int pc2s;
+	int rank;
+	//find lowest p card and assign accordingly, use pc1 and pc2 for testing
+	if (in1<in2){
+		pc1=in1;
+		pc1s=in1s;
+		pc2=in2;
+		pc2s=in2s;
+	}
+	else{
+		pc1=in2;
+		pc1s=in2s;
+		pc2=in1;
+		pc2s=in1s;
+	}
+
+	//check for pairs
+	if (((pc1+13) == pc2) || ((pc1+26) == pc2) || ((pc1+39) == pc2)){
+		//is a pair, check low card suit to determine rank
+		if (pc1s == 1){
+			//is a heart
+			rank = (pc1+13);
+			goto funexit;
+		}
+		else if (pc1s == 2){
+			//is a diamond
+			rank = pc1;
+			goto funexit;
+		}
+		else if (pc1s == 3){
+			//is a club
+			rank = (pc1-13);
+			goto funexit;
+		}
+		else {
+			//is a spade
+			rank = (pc1-26);
+			goto funexit;
+		}
+	}
+
+	else {
+		//is not a pair, higher id is pc2, determine rank
+		if (pc2s == 1){
+			//is a heart
+			rank = (pc2);
+			goto funexit;
+		}
+		else if (pc2s == 2){
+			//is a diamond
+			rank = (pc2-13);
+			goto funexit;
+		}
+		else if (pc2s == 3){
+			//is a club
+			rank = (pc2-26);
+			goto funexit;
+		}
+		else {
+			//is a spade
+			rank = (pc2-39);
+			goto funexit;
+		}
+	}
+
+	funexit:
+	return rank;
+}
+

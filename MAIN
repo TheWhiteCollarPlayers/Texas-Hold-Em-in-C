@@ -1,14 +1,4 @@
 
-/*
- ============================================================================
- Name        : Poker.c
- Author      : 
- Version     :
- Copyright   : Your copyright notice
- Description : Hello World in C, Ansi-style
- ============================================================================
- */
-
 //library inclusions, don't worry about this for papyrus
 #include <stdio.h>
 #include <stdlib.h>
@@ -172,82 +162,143 @@ int main(void) {
 		for (int i=0; i < 52; i++){
 			drawn[i] = 0;
 		}
-		//deal cards to each player and assign to drawn array
+		//deal cards to each player (who is playing) and assign to drawn array
+		if (AI1play==1){
+			//AI1 is playing so deal cards
+			card=deal(drawn);
+			z=(card-1);
+			drawn[z]=card;
 
-		card=deal(drawn);
-		z=(card-1);
-		drawn[z]=card;
+			AI1pc1=card; //AI1 Pocket card 1
+			AI1pc1s=getsuit(AI1pc1);
 
-		AI1pc1=card; //AI1 Pocket card 1
-		AI1pc1s=getsuit(AI1pc1);
+			card=deal(drawn);
+			z=(card-1);
+			drawn[z]=card;
 
-		card=deal(drawn);
-		z=(card-1);
-		drawn[z]=card;
-
-		AI1pc2=card; //AI1 Pocket card 2
-		AI1pc2s=getsuit(AI1pc2);
-
-		card=deal(drawn);
-		z=(card-1);
-		drawn[z]=card;
-
-		AI2pc1=card; //AI2 pocket card 1
-		AI2pc1s=getsuit(AI2pc1);
-
-		card=deal(drawn);
-		z=(card-1);
-		drawn[z]=card;
-
-		AI2pc2=card; //AI2 pocket card 2
-		AI2pc2s=getsuit(AI2pc2);
-
-		card=deal(drawn);
-		z=(card-1);
-		drawn[z]=card;
-
-		Ppc1=card; //P pocket card 1
-		Ppc1s=getsuit(Ppc1);
-
-		card=deal(drawn);
-		z=(card-1);
-		drawn[z]=card;
-
-		Ppc2=card; //P pocket card 2
-		Ppc2s=getsuit(Ppc2);
-
-		card=deal(drawn);
-		z=(card-1);
-		drawn[z]=card;
-
-		AI3pc1=card; //AI3 pocket card 1
-		AI3pc1s=getsuit(AI3pc1);
-
-		card=deal(drawn);
-		z=(card-1);
-		drawn[z]=card;
-
-		AI3pc2=card; //AI3 pocket card 2
-		AI3pc2s=getsuit(AI3pc2);
-
-		//cards are dealt, run AI1 and AI2 operations:
-
-		//get AI1 pocket card rank:
-		AI1pr=pocketrank(AI1pc1,AI1pc2,AI1pc1s,AI1pc2s);
-		//z is the rank, decide what to do
-		if (AI1pr < 7){
-			AI1bet=0;
-			printf("\nAI1 checks.\n");
-			fflush(stdout);
+			AI1pc2=card; //AI1 Pocket card 2
+			AI1pc2s=getsuit(AI1pc2);
 		}
-		else if ((AI1pr >= 7) && (AI1pr <= 13) ){
-			AI1bet=5;
-			AI1cash=AI1cash-5;
-			pot=pot+5;
-			printf("\n") //WIP here
+		else if (AI1play != 1){
+			//AI1 is not playing so skip
+		}
+		if (AI2play == 1){
+			//AI2 is playing so deal cards
+			card=deal(drawn);
+			z=(card-1);
+			drawn[z]=card;
+
+			AI2pc1=card; //AI2 pocket card 1
+			AI2pc1s=getsuit(AI2pc1);
+
+			card=deal(drawn);
+			z=(card-1);
+			drawn[z]=card;
+
+			AI2pc2=card; //AI2 pocket card 2
+			AI2pc2s=getsuit(AI2pc2);
+		}
+		else if (AI2play != 1){
+			//AI2 is not playing so skip
+		}
+		if (Pplay == 1){
+			//player is playing so deal cards
+			card=deal(drawn);
+			z=(card-1);
+			drawn[z]=card;
+
+			Ppc1=card; //P pocket card 1
+			Ppc1s=getsuit(Ppc1);
+
+			card=deal(drawn);
+			z=(card-1);
+			drawn[z]=card;
+
+			Ppc2=card; //P pocket card 2
+			Ppc2s=getsuit(Ppc2);
+		}
+		else if (Pplay != 1){
+			//player is not playing so skip
+		}
+		if (AI3play == 1){
+			//AI3 is playing so deal cards
+			card=deal(drawn);
+			z=(card-1);
+			drawn[z]=card;
+
+			AI3pc1=card; //AI3 pocket card 1
+			AI3pc1s=getsuit(AI3pc1);
+
+			card=deal(drawn);
+			z=(card-1);
+			drawn[z]=card;
+
+			AI3pc2=card; //AI3 pocket card 2
+			AI3pc2s=getsuit(AI3pc2);
+		}
+		else if (AI3play != 1){
+			//AI3 is not playing so skip
 		}
 
+		//cards are dealt, first round of betting starts
+		printf("\nCards have been dealt! Taking first round of bets:\n");
+		fflush(stdout);
+		// perform AI1 operations, if applicable
+		if (AI1play != 1){
+			//AI1 is not playing so skip
+		}
+		else if (AI1play == 1){
+			//AI1 is playing so run ops
+			//first check if AI1 has enough cash to bet
+			if (AI1cash == 0){
+				//is all in, can no longer bet
+				printf("\nAI1 is all in and can no longer bet.");
+				fflush(stdout);
+			}
+			else if (AI1cash > 0){
+				//can bet
+				//get rank of AI1 pocket cards
+				AI1pr=pocketrank(AI1pc1,AI1pc2,AI1pc1s,AI1pc2s);
+				//z is the rank, decide what to do
+				if (AI1pr < 7){
+					AI1bet=0;
+					printf("\nAI1 checks.\n");
+					fflush(stdout);
+				}
+				else if ((AI1pr >= 7) && (AI1pr <= 13) ){
+					AI1bet=5;
+					while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
+						AI1bet=AI1bet-1; //lowers bet until is acceptable
+					}
+					AI1cash=AI1cash-AI1bet;
+					pot=pot+AI1bet;
+					printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
+					fflush(stdout);
+				}
 
+				else if( (AI1pr >= 14) && (AI1pr <= 19) ){
+					AI1bet=12;
+					while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
+						AI1bet=AI1bet-1; //lowers bet until is acceptable
+					}
+					AI1cash=AI1cash-AI1bet;
+					pot=pot+AI1bet;
+					printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
+				}
+
+				else if ((AI1pr >= 20) && (AI1pr <= 26)){
+					AI1bet=18;
+					while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
+						AI1bet=AI1bet-1; //lowers bet until is acceptable
+					}
+					AI1cash=AI1cash-AI1bet;
+					pot=pot+AI1bet;
+					printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
+				}
+			}
+
+		}
+		//AI2 ops
 		//start player menu
 		//run AI3 operations
 
@@ -397,7 +448,7 @@ int getsuit(int cin){
 	funexit:
 	return suit;
 }
-int pocketrank(int, in1, int in2, int in1s, int in2s){
+int pocketrank(int in1, int in2, int in1s, int in2s){
 	int pc1;
 	int pc1s;
 	int pc2;
@@ -469,4 +520,3 @@ int pocketrank(int, in1, int in2, int in1s, int in2s){
 	funexit:
 	return rank;
 }
-

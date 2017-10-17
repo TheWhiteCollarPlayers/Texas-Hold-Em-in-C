@@ -22,10 +22,10 @@ int main(void) {
 	int z; //multi purpose int var
 	int pot; //var for the table pot
 
-	int AI1bet;
-	int AI2bet;
-	int Pbet;
-	int AI3bet;
+	int AI1bet=0;
+	int AI2bet=0;
+	int Pbet=0;
+	int AI3bet=0;
 
 	int AI1pr;
 	int AI2pr;
@@ -84,8 +84,6 @@ int main(void) {
 		printf("Shuffling Cards...\n\n");
 		fflush(stdout);
 
-		//seed random number generator
-		srand(time(NULL));
 
 		for (int i = 0; i < 52; i++) {     // fill array
 			vektor[i] = (i+1);
@@ -137,9 +135,12 @@ int main(void) {
 			printf("\nYou have anted!\n");
 			fflush(stdout);
 		}
-		else {
+		else if (bool==3){
 			Pplay=0;
 			goto Exit;
+		}
+		else {
+			Pplay=0;
 		}
 		bool = checkante(AI3cash);
 		if (bool==1){
@@ -162,6 +163,8 @@ int main(void) {
 		for (int i=0; i < 52; i++){
 			drawn[i] = 0;
 		}
+
+
 		//deal cards to each player (who is playing) and assign to drawn array
 		if (AI1play==1){
 			//AI1 is playing so deal cards
@@ -243,6 +246,8 @@ int main(void) {
 		//cards are dealt, first round of betting starts
 		printf("\nCards have been dealt! Taking first round of bets:\n");
 		fflush(stdout);
+
+
 		// perform AI1 operations, if applicable
 		if (AI1play != 1){
 			//AI1 is not playing so skip
@@ -252,53 +257,251 @@ int main(void) {
 			//first check if AI1 has enough cash to bet
 			if (AI1cash == 0){
 				//is all in, can no longer bet
-				printf("\nAI1 is all in and can no longer bet.");
+				printf("\nAI1 is all in. AI1 checks.");
 				fflush(stdout);
 			}
 			else if (AI1cash > 0){
 				//can bet
 				//get rank of AI1 pocket cards
 				AI1pr=pocketrank(AI1pc1,AI1pc2,AI1pc1s,AI1pc2s);
-				//z is the rank, decide what to do
-				if (AI1pr < 7){
-					AI1bet=0;
-					printf("\nAI1 checks.\n");
-					fflush(stdout);
-				}
-				else if ((AI1pr >= 7) && (AI1pr <= 13) ){
-					AI1bet=5;
-					while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
-						AI1bet=AI1bet-1; //lowers bet until is acceptable
+				//AI1pr is the rank, decide what to do
+				if ((AI1pr < 7)){ //first level is rank
+					if ( (AI2bet>AI1bet) || (Pbet>AI1bet) || (AI3bet>AI1bet) ){ //second level is what to do if others bet more
+
+						AI1play=0;
+						printf("\nAI1 folds!\n");
+						fflush(stdout);
 					}
-					AI1cash=AI1cash-AI1bet;
-					pot=pot+AI1bet;
-					printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
-					fflush(stdout);
+					else{ //no one else bet more so do what it wants
+						AI1bet=0;
+						printf("\nAI1 checks.\n");
+						fflush(stdout);
+					}
+				}
+				else if ( (AI1pr >= 7) && (AI1pr <= 13) ){ //rank level check
+					if ((AI2bet>AI1bet) || (Pbet>AI1bet) || (AI3bet>AI1bet)){
+						AI1play=0;
+						printf("\nAI1 folds\n");
+						fflush(stdout);
+					}
+					else{ //no one else bet more, so what it wants
+						AI1bet=5;
+						while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
+							AI1bet=AI1bet-1; //lowers bet until is acceptable
+						}
+						AI1cash=AI1cash-AI1bet;
+						pot=pot+AI1bet;
+						printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
+						fflush(stdout);
+
+					}
+
 				}
 
-				else if( (AI1pr >= 14) && (AI1pr <= 19) ){
-					AI1bet=12;
-					while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
-						AI1bet=AI1bet-1; //lowers bet until is acceptable
+				else if( (AI1pr >= 14) && (AI1pr <= 19) ){ //rank level check
+					if ((AI2bet>AI1bet) || (Pbet>AI1bet) || (AI3bet>AI1bet)){
+						AI1play=0;
+						printf("\nAI1 folds\n");
+						fflush(stdout);
 					}
-					AI1cash=AI1cash-AI1bet;
-					pot=pot+AI1bet;
-					printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
+					else{
+						AI1bet=12;
+						while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
+							AI1bet=AI1bet-1; //lowers bet until is acceptable
+						}
+						AI1cash=AI1cash-AI1bet;
+						pot=pot+AI1bet;
+						printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
+					}
+
 				}
 
-				else if ((AI1pr >= 20) && (AI1pr <= 26)){
-					AI1bet=18;
-					while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
-						AI1bet=AI1bet-1; //lowers bet until is acceptable
+				else if ((AI1pr >= 20) && (AI1pr <= 26)){ //rank level check
+					if ((AI2bet>AI1bet) || (Pbet>AI1bet) || (AI3bet>AI1bet)){ //at this rank, call any bet if possible
+						if (AI2bet>AI1bet){
+							if (AI1cash>=AI2bet){
+								AI1bet=AI2bet;
+								AI1cash=AI1cash-AI1bet;
+								pot=pot+AI1bet;
+								printf("\nAI1 called AI2's bet of %i chip(s).\n",AI1bet);
+								fflush(stdout);
+							}
+							else{
+								AI1play=0;
+								printf("\nAI1 folds.\n");
+								fflush(stdout);
+							}
+						}
+						else if (Pbet>AI1bet){
+							if (AI1cash>=Pbet){
+								AI1bet=Pbet;
+								AI1cash=AI1cash-AI1bet;
+								pot=pot+AI1bet;
+								printf("\nAI1 called your bet of %i chip(s).\n",AI1bet);
+								fflush(stdout);
+							}
+							else{
+								AI1play=0;
+								printf("\nAI1 folds.\n");
+								fflush(stdout);
+							}
+
+						}
+						else if (AI3bet>AI1bet){
+							if (AI1cash>=AI3bet){
+								AI1bet=AI3bet;
+								AI1cash=AI1cash-AI1bet;
+								pot=pot+AI1bet;
+								printf("\nAI1 called AI3's bet of %i chip(s).\n",AI1bet);
+								fflush(stdout);
+							}
+							else{
+								AI1play=0;
+								printf("\nAI1 folds.\n");
+								fflush(stdout);
+							}
+						}
 					}
-					AI1cash=AI1cash-AI1bet;
-					pot=pot+AI1bet;
-					printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
+					else{ //no one else bet, do what it wants
+						AI1bet=18;
+						while (AI1cash <= AI1bet) { //runs loop if cash is less than bet
+							AI1bet=AI1bet-1; //lowers bet until is acceptable
+						}
+						AI1cash=AI1cash-AI1bet;
+						pot=pot+AI1bet;
+						printf("\nAI1 raised bet to %i chip(s).\n",AI1bet);
+					}
+
 				}
 			}
-
 		}
-		//AI2 ops
+		//AI2 ops, if applicable
+		if (AI2play != 1){
+			//AI2 is not playing so skip
+		}
+		else if (AI2play == 1){
+			//AI2 is playing so run ops
+			//first check if AI2 has enough cash to bet
+			if (AI2cash == 0){
+				//is all in, can no longer bet
+				printf("\nAI2 is all in. AI2 checks.");
+				fflush(stdout);
+			}
+			else if (AI2cash > 0){
+				//can bet
+				//get rank of AI2 pocket cards
+				AI2pr=pocketrank(AI2pc1,AI2pc2,AI2pc1s,AI2pc2s);
+				//AI2pr is the rank, decide what to do
+				if ((AI2pr < 7)){ //first level is rank
+					if ( (AI1bet>AI2bet) || (Pbet>AI2bet) || (AI3bet>AI2bet) ){ //second level is what to do if others bet more
+
+						AI2play=0;
+						printf("\nAI2 folds!\n");
+						fflush(stdout);
+					}
+					else{ //no one else bet more so do what it wants
+						AI2bet=0;
+						printf("\nAI2 checks.\n");
+						fflush(stdout);
+					}
+				}
+				else if ( (AI2pr >= 7) && (AI2pr <= 13) ){ //rank level check
+					if ((AI1bet>AI2bet) || (Pbet>AI2bet) || (AI3bet>AI2bet)){
+						AI2play=0;
+						printf("\nAI2 folds!\n");
+						fflush(stdout);
+					}
+					else{ //no one else bet more, so what it wants
+						AI2bet=5;
+						while (AI2cash <= AI2bet) { //runs loop if cash is less than bet
+							AI2bet=AI2bet-1; //lowers bet until is acceptable
+						}
+						AI2cash=AI2cash-AI2bet;
+						pot=pot+AI2bet;
+						printf("\nAI2 raised bet to %i chip(s).\n",AI2bet);
+						fflush(stdout);
+
+					}
+
+				}
+
+				else if( (AI2pr >= 14) && (AI2pr <= 19) ){ //rank level check
+					if ((AI1bet>AI2bet) || (Pbet>AI2bet) || (AI3bet>AI2bet)){
+						AI2play=0;
+						printf("\nAI2 folds!\n");
+						fflush(stdout);
+					}
+					else{
+						AI2bet=12;
+						while (AI2cash <= AI2bet) { //runs loop if cash is less than bet
+							AI2bet=AI2bet-1; //lowers bet until is acceptable
+						}
+						AI2cash=AI2cash-AI2bet;
+						pot=pot+AI2bet;
+						printf("\nAI2 raised bet to %i chip(s).\n",AI2bet);
+					}
+
+				}
+
+				else if ((AI2pr >= 20) && (AI2pr <= 26)){ //rank level check
+					if ((AI1bet>AI2bet) || (Pbet>AI2bet) || (AI3bet>AI2bet)){ //at this rank, call any bet if possible
+						if (AI1bet>AI2bet){
+							if (AI2cash>=AI1bet){
+								AI2bet=AI1bet;
+								AI2cash=AI2cash-AI2bet;
+								pot=pot+AI2bet;
+								printf("\nAI2 called AI1's bet of %i chip(s).\n",AI2bet);
+								fflush(stdout);
+							}
+							else{
+								AI2play=0;
+								printf("\nAI1 folds.\n");
+								fflush(stdout);
+							}
+						}
+						else if (Pbet>AI2bet){
+							if (AI2cash>=Pbet){
+								AI2bet=Pbet;
+								AI2cash=AI2cash-AI2bet;
+								pot=pot+AI2bet;
+								printf("\nAI2 called your bet of %i chip(s).\n",AI2bet);
+								fflush(stdout);
+							}
+							else{
+								AI2play=0;
+								printf("\nAI2 folds.\n");
+								fflush(stdout);
+							}
+
+						}
+						else if (AI3bet>AI2bet){
+							if (AI2cash>=AI3bet){
+								AI2bet=AI3bet;
+								AI2cash=AI2cash-AI2bet;
+								pot=pot+AI2bet;
+								printf("\nAI2 called AI3's bet of %i chip(s).\n",AI2bet);
+								fflush(stdout);
+							}
+							else{
+								AI1play=0;
+								printf("\nAI2 folds.\n");
+								fflush(stdout);
+							}
+						}
+					}
+					else{ //no one else bet, do what it wants
+						AI2bet=18;
+						while (AI2cash <= AI2bet) { //runs loop if cash is less than bet
+							AI2bet=AI2bet-1; //lowers bet until is acceptable
+						}
+						AI2cash=AI2cash-AI2bet;
+						pot=pot+AI2bet;
+						printf("\nAI2 raised bet to %i chip(s).\n",AI2bet);
+					}
+
+				}
+			}
+		}
 		//start player menu
 		//run AI3 operations
 
@@ -347,7 +550,7 @@ int Pcheckante(int x){
 	int i;
 	int in;
 	if (x>=1){
-		printf("\nWould you like to ante?\n1) Yes\n2) No\nYour response: ");
+		printf("\nWould you like to ante?\n1) Yes\n2) No\n3)Leave table\nYour response: ");
 		fflush(stdout);
 		fflush(stdin);
 		scanf("%d",&in);
@@ -355,12 +558,17 @@ int Pcheckante(int x){
 			i=1;
 		}
 		else if (in==2){
-			printf("\nYou have chosen not to ante! Exiting game.");
+			printf("\nYou have chosen not to ante! Spectating game.");
 			fflush(stdout);
-			i=0;
+			i=2;
+		}
+		else if (in==3){
+			printf("\nYou have chosen to stand up from the table.\n");
+			fflush(stdout);
+			i=3;
 		}
 		else{
-			printf("\n INVALID INPUT! EXITING GAME!");
+			printf("\n INVALID INPUT! Defaulting to spectate!");
 			i=0;
 		}
 	}
